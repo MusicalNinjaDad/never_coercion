@@ -1,0 +1,1 @@
+FROM ghcr.io/musicalninjadad/rust-devcontainer:latest@sha256:243aac918fd1a9bf696b74543d839dc52bcb3e95d9eb550b1641af401a470488

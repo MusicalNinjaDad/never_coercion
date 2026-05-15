@@ -1,0 +1,16 @@
+[package]
+name = "TEMPLATE"
+version = "0.0.1"
+edition = "2024"
+readme = "README.md"
+description = "TEMPLATE"
+authors = ["Mike Foster <https://github.com/MusicalNinjaDad>"]
+keywords = ["TEMPLATE"]
+homepage = "TEMPLATE"
+repository = "TEMPLATE"
+categories = ["TEMPLATE"]
+license = "MIT"
+
+[dev-dependencies]
+bitflags = "2.11.1"
+futures = {version = "0.3.32", default-features = false}
