@@ -24,6 +24,8 @@ A related clear function can (semantically) only return `Poll::Pending` or `Poll
 
 This signature, however, causes issues down the road, for example when implementing `Stream`
 
+[playground](https://play.rust-lang.org/?version=nightly&mode=debug&edition=2024&gist=6a875431c95387cd7358784e32f110a6)
+
 ```rust
 /// Async polling for a socket
 trait PollableSocket
@@ -57,7 +59,7 @@ impl Stream for MySocket {
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         match ready!(self.as_mut().poll_ready(cx)) {
             Ok(readiness) if readiness.contains(Ready::READ) => todo!("read and stream"),
-            _ => self.clear_ready(cx).map_ok(|x| x).map(Some),
+            _ => self.clear_ready(cx).map_ok(|x| x).map(Some), // <- .map_ok(|x| x) to coerce ! to String
         }
     }
 }
@@ -111,7 +113,7 @@ where
 
 will not trigger.
 
-Here is a full skeleton example
+Here is a full skeleton example [playground](https://play.rust-lang.org/?version=nightly&mode=debug&edition=2024&gist=9a132caf722843b366fbed5981f12abf)
 
 ```rust
 #![allow(dead_code)]
@@ -237,7 +239,7 @@ It doesn't take a large amount of imagination to envision `Option<Result<!,E>>` 
 - map try: `.map(|e| try {e?})`
 - Don't use `Result<!,E>` to represent 'only returns on error' but stick with `Result<(),E>` which was used before we had `!`
 
-And for those wondering where this would come from, I originally split out a common error handler in the async example above, but then just inlined it instead:
+And for those wondering where this would come from, I originally split out a common error handler in the async example above, but then just inlined it instead: [playground](https://play.rust-lang.org/?version=nightly&mode=debug&edition=2024&gist=e8e535dd86629047e011fd5e9152914d)
 
 ```rust
 #![feature(never_type)]
@@ -302,7 +304,7 @@ The HIR is currently used to perform type-inference, trait solving & type-checki
 That's less relevant given the restrictions on this solution:
 
 1. No usage in `match` etc. - so no crossover with the concerns around memory access & dereferencing in the context of unsafe code discussed in [[auto-never]].
-1. The compiler already has the information in the HIR and uses it for similar validations. For example see the error returned when attempting to implement map below:
+1. The compiler already has the information in the HIR and uses it for similar validations. For example see the error returned when attempting to implement map below [playground](https://play.rust-lang.org/?version=nightly&mode=debug&edition=2024&gist=961e70bc3e2549975163dc16ad0425b1):
 
 ```rust
 #![feature(never_type)]

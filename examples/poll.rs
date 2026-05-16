@@ -13,19 +13,7 @@ use futures::Stream;
 
 struct MySocket;
 
-struct MySocket2;
-
 impl PollableSocket for MySocket {
-    fn clear_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<!>> {
-        todo!()
-    }
-    
-    fn poll_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<Ready>> {
-        todo!()
-    }
-}
-
-impl PollableSocket for MySocket2 {
     fn clear_ready(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<!>> {
         todo!()
     }
@@ -74,21 +62,7 @@ impl Stream for MySocket {
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         match ready!(self.as_mut().poll_ready(cx)) {
             Ok(readiness) if readiness.contains(Ready::READ) => todo!("read and stream"),
-            _ => self.clear_ready(cx).map_ok(|x| x).map(Some),
-        }
-    }
-}
-
-impl Stream for MySocket2 {
-    type Item = io::Result<String>;
-
-    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        match ready!(self.as_mut().poll_ready(cx)) {
-            Ok(readiness) if readiness.contains(Ready::READ) => todo!("read and stream"),
-            _ => match self.clear_ready(cx) {
-                Poll::Pending => Poll::Pending,
-                Poll::Ready(Err(e)) => Poll::Ready(Some(Err(e))),
-            }
+            _ => self.clear_ready(cx).map_ok(|x| x).map(Some), // <- .map_ok(|x| x) to coerce ! to String
         }
     }
 }
