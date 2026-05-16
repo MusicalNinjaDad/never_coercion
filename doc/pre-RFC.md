@@ -6,7 +6,7 @@ Allow `!` to be used in mainstream code to signify an impossible value without i
 
 ## Motivation
 
-The stabilisation of never is (hopefully) just around the corner (a huuuuge shoutout to [WaffleLapkin](https://github.com/WaffleLapkin) for all its work getting this to the final finish line). We should expect increase use of `!` in the future to explicitly highlight situations which *cannot* occur. Currently, using `!` to accurately and explicitly anchor this information in the type system and lead to unfortunate foot guns.
+The stabilisation of never is (hopefully) just around the corner (a huuuuge shoutout to [WaffleLapkin](https://github.com/WaffleLapkin) for all its work getting this to the final finish line). We should expect increased use of `!` in the future to explicitly highlight situations which *cannot* occur. Currently, using `!` to accurately and explicitly anchor this information in the type system and lead to unfortunate foot guns.
 
 In the past 2 months I have run into the following situations where `!` is the *right* answer, but not the *pragmatic* answer.
 
@@ -262,4 +262,32 @@ pub fn process(input: u32) -> Option<io::Result<u32>> {
 
 (Yes the error handler *could* just return `Option<io::Error>` and leave it to the caller to wrap in a `Result`, but wouldn't it be nicer to hand back a type structure that the caller can simply use?)
 
+### Why bother? - there are clear workarounds for each case
+
+`!` is great! It extends the language to provide a clear way to idiomatically express intent. From the point of view of a general language user, I'd consider it as valuable as `None` (is not Null) and `Result` (is neither a tuple nor an exception) in this regard. It therefore deserves a focus on integrative ergonomics in the surrounding language, separately from the core implementation.
+
+1. We should expect `Result`, fallible traits and error-handlers to be the most common cases where people begin to use `!`. If these obvious usages cause "pain" shortly down the road then, sadly, most will simply replace `!` with a dummy value/type and move on.
+1. All the reasonable workarounds rely on some form of `map` function. `Poll` makes this easiest by providing a map to the inside `T` of a double-wrapped `Poll<Option<Result<T,E>>>`; `Option` doesn't offer this (for good reasons) but at least has its own `map` which allows chaining. As `Try` nears stabilisation and then gets into stable we should expect an increased number of custom wrapper types; many of which may not think to offer a `map`. This leaves the user stuck with verbose match destructuring; or avoiding either `!` or the custom try type (or both).
+
+### Ergonomics
+
+The 2017 [[Ergonomics Initiative]] lays out 3 dimensions to balance when looking at providing implicitness for reasons of ergonomics.
+
+#### Applicability (4/5)
+
+- Strictly excluding `match` etc. from consideration removes the side-effects that made previous considerations impossible at the cost of slightly reduced applicability.
+- The coercion is restricted to only cover situations with `<!>` as a generic type, generic type bound or an associated type.
+
+#### Power (2/5)
+
+- Converting *from* `Foo<!>` to `Foo<T>` will never destroy any information. Or rather, the implicit conversion will only take effect *if it is safe to do so*.
+- By performing this as part of the type-safety & generics analysis no runtime conversion of data occurs.
+- No memory access or implicit dereferencing occurs.
+
+#### Context-Dependence (2/5)
+
+- By restricting to situations where type-inference is already expected the overall influence is restricted to *at most* the current function / trait impl boundary as return types are always explicit. The user only needs to look at two function / trait signatures which are immediately adjacent to the current code to see `!` incoming and `T` outgoing.
+- Additionally rust-analyzer is commonly used and provides inline details of the explicit & inferred types directly in place in the code for most users.
+
 [TrackingIssue64715]: (https://github.com/rust-lang/rust/issues/64715)
+[Ergonomics Initiative]: (https://blog.rust-lang.org/2017/03/02/lang-ergonomics/#how-to-analyze-and-manage-the-reasoning-footprint)

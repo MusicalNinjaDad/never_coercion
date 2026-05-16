@@ -15,5 +15,5 @@ never-patterns-exhaustive-matching-and-uninhabited-types-oh-my/)
 -[reddit: Why does the never type not implement all traits?](https://www.reddit.com/r/rust/comments/1k5hkg3/why_does_the_never_type_not_implement_all_traits/)
 -[internals: Never types and inference (2018/2019)](https://internals.rust-lang.org/t/never-types-and-inference/8924)
 
--[Ergonomics initiative](https://blog.rust-lang.org/2017/03/02/lang-ergonomics/#how-to-analyze-and-manage-the-reasoning-footprint)
+-[Ergonomics Initiative](https://blog.rust-lang.org/2017/03/02/lang-ergonomics/#how-to-analyze-and-manage-the-reasoning-footprint)
 -[Blog: What Can Coerce, and Where, in Rust](https://www.possiblerust.com/guide/what-can-coerce-and-where-in-rust)
