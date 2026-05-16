@@ -72,7 +72,7 @@ _ => match self.clear_ready(cx) {
 
 This may seem trivial when reading later. The surrounding code is, by it's very nature, inherently complex; the requirement to add a no-op map adds a completely different dimension of complexity and thus risk, requiring the user to context-switch (I certainly found this cognitively taxing and something that completely threw my focus from the actual implementation).
 
-### Infallible conversions & trait bounds / Option-wrapping
+### Infallible conversions & trait bounds
 
 The second case is probably going to be more common in the wild. While implementing a parsing library I:
 
@@ -221,5 +221,43 @@ There are two ways around this:
         }
     }
     ```
+
+### Option wrapping
+
+It doesn't take a large amount of imagination to envision `Option<Result<!,E>>` or `Option<Result<T,!>>` resulting from similar starting situations to the above examples. Would the recommendation for `Option<Result<!,E>>` be:
+
+- nested maps: `.map(|r| r.map(|never| never))`
+- double transposition: `.transpose().map(|_never| None).transpose()`
+- map try: `.map(|e| try {e?})`
+- Don't use `Result<!,E>` to represent 'only returns on error' but stick with `Result<(),E>` which was used before we had `!`
+
+And for those wondering where this would come from, I originally split out a common error handler in the async example above, but then just inlined it instead:
+
+```rust
+#![feature(never_type)]
+#![feature(try_blocks)]
+use std::io;
+
+fn ignore_blocking(err: io::Error) -> Option<io::Result<!>> {
+    match err.kind() {
+        // This could just as easily be any error we want to ignore and move on
+        // (e.g. `PermissionDenied | ReadOnlyFileSystem | IsADirectory`) when updating
+        // "all available files". Possibly with a call to `info!()` to log.
+        io::ErrorKind::WouldBlock => None,
+        _ => Some(Err(err)),
+    }
+}
+
+pub fn process(input: u32) -> Option<io::Result<u32>> {
+    let io_function = Ok(input);
+    match io_function {
+        Ok(_) => Some(io_function),
+        Err(e) => ignore_blocking(e) // hopefully in future we can just add a `,` here
+        .map(|e| try {e?}), // currently we need to convert Option<Result<!>> to Option<Result<u32>>
+    }
+}
+```
+
+(Yes the error handler *could* just return `Option<io::Error>` and leave it to the caller to wrap in a `Result`, but wouldn't it be nicer to hand back a type structure that the caller can simply use?)
 
 [TrackingIssue64715]: (https://github.com/rust-lang/rust/issues/64715)
