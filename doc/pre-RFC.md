@@ -277,7 +277,7 @@ pub fn process(input: u32) -> Option<io::Result<u32>> {
 
 ### Ergonomics
 
-The 2017 [[Ergonomics Initiative]] lays out 3 dimensions to balance when looking at providing implicitness for reasons of ergonomics.
+The 2017 [ergonomics initiative][Ergonomics Initiative] lays out 3 dimensions to balance when looking at providing implicitness for reasons of ergonomics.
 
 #### Applicability (4/5)
 
@@ -303,7 +303,7 @@ The HIR is currently used to perform type-inference, trait solving & type-checki
 
 That's less relevant given the restrictions on this solution:
 
-1. No usage in `match` etc. - so no crossover with the concerns around memory access & dereferencing in the context of unsafe code discussed in [[auto-never]].
+1. No usage in `match` etc. - so no crossover with the concerns around memory access & dereferencing in the context of unsafe code discussed in [auto-never][auto-never].
 1. The compiler already has the information in the HIR and uses it for similar validations. For example see the error returned when attempting to implement map below [playground](https://play.rust-lang.org/?version=nightly&mode=debug&edition=2024&gist=961e70bc3e2549975163dc16ad0425b1):
 
 ```rust
@@ -373,13 +373,12 @@ fn main() {
 - [Auto-Never forum post](https://internals.rust-lang.org/t/blog-post-never-patterns-exhaustive-matching-and-uninhabited-types/8197)
 - [Auto-Never blog post][auto-never]
 - [Design meeting 2024-03-13: The never type](https://hackmd.io/@rust-lang-team/HkKNlUkAT)
-never-patterns-exhaustive-matching-and-uninhabited-types-oh-my/)
 - [scottmcm similar Q on zulip in 2020](https://rust-lang.zulipchat.com/#narrow/channel/259160-t-lang.2Fproject-never-type/topic/Coercions.20of.20other.20uninhabited.20types)
--[reddit: Why does the never type not implement all traits?](https://www.reddit.com/r/rust/comments/1k5hkg3/why_does_the_never_type_not_implement_all_traits/)
--[internals: Never types and inference (2018/2019)](https://internals.rust-lang.org/t/never-types-and-inference/8924)
--[[Ergonomics Initiative]]
--[Blog: What Can Coerce, and Where, in Rust](https://www.possiblerust.com/guide/what-can-coerce-and-where-in-rust)
+- [reddit: Why does the never type not implement all traits?](https://www.reddit.com/r/rust/comments/1k5hkg3/why_does_the_never_type_not_implement_all_traits/)
+- [internals: Never types and inference (2018/2019)](https://internals.rust-lang.org/t/never-types-and-inference/8924)
+- [Ergonomics Initiative][Ergonomics Initiative]
+- [Blog: What Can Coerce, and Where, in Rust](https://www.possiblerust.com/guide/what-can-coerce-and-where-in-rust)
 
-[auto-never]: (https://smallcultfollowing.com/babysteps/blog/2018/08/13/)
-[TrackingIssue64715]: (https://github.com/rust-lang/rust/issues/64715)
-[Ergonomics Initiative]: (https://blog.rust-lang.org/2017/03/02/lang-ergonomics/#how-to-analyze-and-manage-the-reasoning-footprint)
+[auto-never]: https://smallcultfollowing.com/babysteps/blog/2018/08/13/never-patterns-exhaustive-matching-and-uninhabited-types-oh-my
+[TrackingIssue64715]: https://github.com/rust-lang/rust/issues/64715
+[Ergonomics Initiative]: https://blog.rust-lang.org/2017/03/02/lang-ergonomics/#how-to-analyze-and-manage-the-reasoning-footprint
