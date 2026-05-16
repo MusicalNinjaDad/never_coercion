@@ -2,15 +2,17 @@
 
 ## Summary
 
-Allow `!` to be used in mainstream code to signify an impossible value without introducing "more work than it's worth".
+Allow `!` to be used in mainstream code to signify an impossible value without introducing "more work than it's worth". Up to now most of my mainstream usage of `!` has brought reduced ergonomics as the cost of accurate typing.
 
 ## Motivation
 
-With the stabilisation of Never (hopefully) just around the corner. We should expect increase use of `!` in the future to explicitly highlight situations which *cannot* occur. Currently, using `!` to accurately and explicitly anchor this information in the type system and lead to unfortunate foot guns.
+The stabilisation of never is (hopefully) just around the corner (a huuuuge shoutout to [WaffleLapkin](https://github.com/WaffleLapkin) for all its work getting this to the final finish line). We should expect increase use of `!` in the future to explicitly highlight situations which *cannot* occur. Currently, using `!` to accurately and explicitly anchor this information in the type system and lead to unfortunate foot guns.
 
 In the past 2 months I have run into the following situations where `!` is the *right* answer, but not the *pragmatic* answer.
 
-### Async: reset io readiness & Poll::Pending
+### Examples
+
+#### Async: reset io readiness & Poll::Pending
 
 Before using an io connection it is often necessary to check readiness. These checks can leave the connection in an undesired state and need to be reset if not used.
 
@@ -72,7 +74,7 @@ _ => match self.clear_ready(cx) {
 
 This may seem trivial when reading later. The surrounding code is, by it's very nature, inherently complex; the requirement to add a no-op map adds a completely different dimension of complexity and thus risk, requiring the user to context-switch (I certainly found this cognitively taxing and something that completely threw my focus from the actual implementation).
 
-### Infallible conversions & trait bounds
+#### Infallible conversions & trait bounds
 
 The second case is probably going to be more common in the wild. While implementing a parsing library I:
 
@@ -222,7 +224,7 @@ There are two ways around this:
     }
     ```
 
-### Option wrapping
+#### Option wrapping
 
 It doesn't take a large amount of imagination to envision `Option<Result<!,E>>` or `Option<Result<T,!>>` resulting from similar starting situations to the above examples. Would the recommendation for `Option<Result<!,E>>` be:
 
