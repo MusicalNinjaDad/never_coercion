@@ -4,6 +4,8 @@
 
 Allow `!` to be used in mainstream code to signify an impossible value without introducing "more work than it's worth". Up to now most of my mainstream usage of `!` has brought reduced ergonomics as the cost of accurate typing.
 
+I propose to provide a limited form of coercion for the most common & painful usages of `!` in a way which moves the discussion away from whether `Foo<!>` is inhabited. I imagine that the implementation would occur reasonably early in the compilation alongside type-inferance and bounds validation. I would be more than happy to put in the work to research, identify, discuss, implement and shepherd such a change (but would be very grateful if I could find a willing mentor).
+
 ## Motivation
 
 The stabilisation of never is (hopefully) just around the corner (a huuuuge shoutout to [WaffleLapkin](https://github.com/WaffleLapkin) for all its work getting this to the final finish line). We should expect increased use of `!` in the future to explicitly highlight situations which *cannot* occur. Currently, using `!` to accurately and explicitly anchor this information in the type system and lead to unfortunate foot guns.
@@ -289,5 +291,73 @@ The 2017 [[Ergonomics Initiative]] lays out 3 dimensions to balance when looking
 - By restricting to situations where type-inference is already expected the overall influence is restricted to *at most* the current function / trait impl boundary as return types are always explicit. The user only needs to look at two function / trait signatures which are immediately adjacent to the current code to see `!` incoming and `T` outgoing.
 - Additionally rust-analyzer is commonly used and provides inline details of the explicit & inferred types directly in place in the code for most users.
 
+## How could this be implemented?
+
+The HIR is currently used to perform type-inference, trait solving & type-checking. The viability of coercion requires the same data and can be verified in the HIR at the same time, probably as part of the existing steps. It may be necessary / possible to leverage some form of monomorphisation later in the MIR, or to provide targeted MIR optimisations. Right now I just have a high-level idea of where to start looking to see if I can find a viable implementation.
+
+## This won't work because `Foo<!>`, `&!` etc are not guaranteed to be uninhabited
+
+That's less relevant given the restrictions on this solution:
+
+1. No usage in `match` etc. - so no crossover with the concerns around memory access & dereferencing in the context of unsafe code discussed in [[auto-never]].
+1. The compiler already has the information in the HIR and uses it for similar validations. For example see the error returned when attempting to implement map below:
+
+```rust
+#![feature(never_type)]
+#![allow(dead_code)]
+
+#[derive(Debug)]
+struct Foo<T: HasAssocType> {
+    data: T::AssocType,
+}
+
+trait HasAssocType: Sized {
+    type AssocType;
+}
+
+impl HasAssocType for ! {
+    type AssocType = [u8; 0];
+}
+
+impl HasAssocType for u8 {
+    type AssocType = [u8; 1];
+}
+
+// // error[E0308]: mismatched types
+// //   --> examples/generic.rs:43:20
+// //    |
+// // 38 |     fn map<U, F>(self, f: F) -> Foo<U>
+// //    |            - found this type parameter
+// // ...
+// // 43 |         Foo{ data: f(self.data) }
+// //    |                    ^^^^^^^^^^^^ expected associated type, found type parameter `U`
+// //    |
+// //    = note: expected associated type `<U as HasAssocType>::AssocType`
+// //                found type parameter `U`
+// // help: consider further restricting this bound
+// //    |
+// // 40 |         U: HasAssocType<AssocType = U>,
+// //    |                        +++++++++++++++
+//
+// impl<T: HasAssocType> Foo<T> {
+//     fn map<U, F>(self, f: F) -> Foo<U>
+//     where
+//         U: HasAssocType,
+//         F: FnOnce(T) -> U,
+//     {
+//         Foo{ data: f(self.data) }
+//     }
+// }
+
+fn main() {
+    let never_foo = Foo::<!> { data: [] };
+
+    let u8_foo = Foo::<u8> { data: [1] };
+
+    println!("{never_foo:?}, {u8_foo:?}");
+}
+```
+
+[auto-never]: (https://internals.rust-lang.org/t/blog-post-never-patterns-exhaustive-matching-and-uninhabited-types/8197)
 [TrackingIssue64715]: (https://github.com/rust-lang/rust/issues/64715)
 [Ergonomics Initiative]: (https://blog.rust-lang.org/2017/03/02/lang-ergonomics/#how-to-analyze-and-manage-the-reasoning-footprint)
