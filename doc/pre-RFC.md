@@ -4,11 +4,13 @@
 
 Allow `!` to be used in mainstream code to signify an impossible value without introducing "more work than it's worth". Up to now most of my mainstream usage of `!` has brought reduced ergonomics as the cost of accurate typing.
 
-I propose to provide a limited form of coercion for the most common & painful usages of `!` in a way which moves the discussion away from whether `Foo<!>` is inhabited. I imagine that the implementation would occur reasonably early in the compilation alongside type-inferance and bounds validation. I would be more than happy to put in the work to research, identify, discuss, implement and shepherd such a change (but would be very grateful if I could find a willing mentor).
+I propose to provide a limited form of coercion for the most common & painful usages of `!`, in a way which moves the discussion away from whether `Foo<!>` is inhabited. I imagine that the implementation would occur reasonably early in the compilation alongside type-inferance and bounds validation. I would be more than happy to put in the work to research, identify, discuss, implement and shepherd such a change (but would be very grateful if I could find a willing mentor).
 
 ## Motivation
 
-The stabilisation of never is (hopefully) just around the corner (a huuuuge shoutout to [WaffleLapkin](https://github.com/WaffleLapkin) for all its work getting this to the final finish line). We should expect increased use of `!` in the future to explicitly highlight situations which *cannot* occur. Currently, using `!` to accurately and explicitly anchor this information in the type system and lead to unfortunate foot guns.
+The stabilisation of never is (hopefully) just around the corner (a huuuuge thank you to *everyone* who has been part of getting it this far). Please please, please do not take this as a criticism - rather a compliment as to how valuable your efforts are to people like me who love to code in rust (you may get a feeeling for how excited I am to be able to make even more use of `!`).
+
+ We should expect increased use of `!` in the future to explicitly highlight situations which *cannot* occur. Currently, using `!` to accurately and explicitly anchor this information in the type system and lead to unfortunate foot guns.
 
 In the past 2 months I have run into the following situations where `!` is the *right* answer, but not the *pragmatic* answer.
 
@@ -358,6 +360,24 @@ fn main() {
 }
 ```
 
-[auto-never]: (https://internals.rust-lang.org/t/blog-post-never-patterns-exhaustive-matching-and-uninhabited-types/8197)
+## References
+
+- [Zulip thread where I first raised this](https://rust-lang.zulipchat.com/#narrow/channel/259160-t-lang.2Fproject-never-type/topic/Coercing.20Foo.3C.21.3E.20to.20Foo.3CT.3E)
+- [Main never RFC #1216](https://github.com/rust-lang/rfcs/pull/1216)
+- [Main never Tracking issue #35121](https://github.com/rust-lang/rust/issues/35121)
+- [Main never stabilisation PR #155499](https://github.com/rust-lang/rust/pull/155499) :cat:
+- [Tracking issue for reserved `impl impl<T> From<!> for T` #64715][TrackingIssue64715]
+- [Never Type initiative book](https://rust-lang.github.io/never-type-initiative/RFC.html)
+- [Auto-Never forum post](https://internals.rust-lang.org/t/blog-post-never-patterns-exhaustive-matching-and-uninhabited-types/8197)
+- [Auto-Never blog post][auto-never]
+- [Design meeting 2024-03-13: The never type](https://hackmd.io/@rust-lang-team/HkKNlUkAT)
+never-patterns-exhaustive-matching-and-uninhabited-types-oh-my/)
+- [scottmcm similar Q on zulip in 2020](https://rust-lang.zulipchat.com/#narrow/channel/259160-t-lang.2Fproject-never-type/topic/Coercions.20of.20other.20uninhabited.20types)
+-[reddit: Why does the never type not implement all traits?](https://www.reddit.com/r/rust/comments/1k5hkg3/why_does_the_never_type_not_implement_all_traits/)
+-[internals: Never types and inference (2018/2019)](https://internals.rust-lang.org/t/never-types-and-inference/8924)
+-[[Ergonomics Initiative]]
+-[Blog: What Can Coerce, and Where, in Rust](https://www.possiblerust.com/guide/what-can-coerce-and-where-in-rust)
+
+[auto-never]: (https://smallcultfollowing.com/babysteps/blog/2018/08/13/)
 [TrackingIssue64715]: (https://github.com/rust-lang/rust/issues/64715)
 [Ergonomics Initiative]: (https://blog.rust-lang.org/2017/03/02/lang-ergonomics/#how-to-analyze-and-manage-the-reasoning-footprint)
