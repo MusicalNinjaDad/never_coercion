@@ -1,4 +1,4 @@
-# Pre-RFC Never coercion
+# Pre-RFC improved ergonomics for `!`
 
 ## Summary
 
