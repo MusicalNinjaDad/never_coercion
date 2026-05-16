@@ -8,6 +8,12 @@ enum HeaderErr {
     ParseError,
 }
 
+impl From<!> for HeaderErr {
+    fn from(value: !) -> Self {
+        match value {}
+    }
+}
+
 enum DeviceType {
     AudioController,
     VideoController,
