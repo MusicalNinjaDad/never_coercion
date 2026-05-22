@@ -1,6 +1,5 @@
 #![feature(never_type)]
 #![feature(try_blocks)]
-#![feature(try_blocks_heterogeneous)]
 use std::io;
 
 fn ignore_blocking(err: io::Error) -> Option<io::Result<!>> {
