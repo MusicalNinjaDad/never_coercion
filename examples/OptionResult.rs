@@ -22,6 +22,7 @@ pub fn process(input: u32) -> Option<io::Result<u32>> {
     }
 }
 
+// Avoiding map and writing this out help to highlight where the confusion arises
 pub fn process_some_try(input: u32) -> Option<io::Result<u32>> {
     let io_function = Ok(input);
     match io_function {
@@ -38,7 +39,7 @@ pub fn process_some_try(input: u32) -> Option<io::Result<u32>> {
     }
 }
 
-// Easier to see what is going on if we first explicitly mark the try blocks
+// Easier to see what is going on if we explicitly mark the try blocks
 // and don't manually construct a final Some()
 pub fn process_try_try(input: u32) -> Option<io::Result<u32>> {
     let io_function = Ok(input);
