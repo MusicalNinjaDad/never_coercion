@@ -86,26 +86,37 @@ pub fn process_desugared(input: u32) -> Option<io::Result<u32>> {
     }
 }
 
-pub fn process_return_result_qmark(input: u32) -> io::Result<u32> {
-    let io_function = Ok(input);
-    match io_function {
-        Ok(_) => io_function,
-        Err(e) => ignore_blocking(e).unwrap()?,
-    }
-}
-
+// To show the confusion & relevance to ! from a slightly different perspective
 pub fn process_return_result_long(input: u32) -> io::Result<u32> {
     let io_function = Ok(input);
     match io_function {
         Ok(_) => io_function,
         Err(e) => {
             let o: Option<Result<!, io::Error>> = ignore_blocking(e);
-            let r = o.unwrap();
-            let _b = r?;
+            let r = o.unwrap(); // InferredType `r: io::Result<!>`
+            let _b = r?; // InferredType `_b: io::Result<u32>`
             #[allow(unreachable_code)]
-            _b
+            _b // With ! this is unreachable
         }
     }
 }
+
+fn ignore_blocking_not_never(err: io::Error) -> io::Result<std::convert::Infallible> {
+    Err(err)
+}
+
+// Recognition of ! as infallible appears much earlier in process than Infallible
+pub fn process_return_result_not_never(input: u32) -> io::Result<u32> {
+    let io_function = Ok(input);
+    match io_function {
+        Ok(_) => io_function,
+        Err(e) => {
+            let r = ignore_blocking_not_never(e); // InferredType `r: io::Result<Infallible>`
+            let _b = r?; // InferredType `_b: Infallible`
+            Err(io::Error::other("Infallible is not recognised as divergent by HIR, only at MIR"))
+        }
+    }
+}
+
 
 fn main() {}
