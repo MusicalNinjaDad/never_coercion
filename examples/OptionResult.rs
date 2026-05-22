@@ -56,34 +56,31 @@ pub fn process_try_try(input: u32) -> Option<io::Result<u32>> {
 
 // Which desugars and simplifies to:
 pub fn process_desugared(input: u32) -> Option<io::Result<u32>> {
-    let io_function = Ok(input);
+    type OptionResultNever = Option<io::Result<!>>;
+    type ResultNever = io::Result<!>;
+    type OptionResultU32 = Option<io::Result<u32>>;
+    type ResultU32 = io::Result<u32>;
+
+    let io_function = ResultU32::Ok(input);
     match io_function {
-        Ok(_) => Some(io_function),
+        Ok(_) => OptionResultU32::Some(io_function),
         Err(e) => {
-            type OptionResultNever = Option<io::Result<!>>;
-            type ResultNever = io::Result<!>;
-            type OptionResultU32 = Option<io::Result<u32>>;
-            type ResultU32 = io::Result<u32>;
-            
-            let inner_try: ResultU32 = {
+            let outer_try: OptionResultU32 = 'outer_try: {
                 let o: OptionResultNever = ignore_blocking(e);
-                #[expect(clippy::question_mark)]
                 let r: ResultNever = match o {
                     OptionResultNever::Some(r) => r,
                     // Automatic, hidden, explicit type conversion in desugared version
-                    OptionResultNever::None => return OptionResultU32::None,
+                    OptionResultNever::None => break 'outer_try OptionResultU32::None,
                 };
-                match r {
+                let inner_try: ResultU32 = match r {
                     // Automatic, hidden, explicit type conversion in desugared version
                     ResultNever::Err(e) => ResultU32::Err(e),
-                }
+                };
+                // Automatic, hidden, explicit type conversion in desugared version
+                OptionResultU32::Some(inner_try)
             };
 
-            match inner_try {
-                Ok(_) => unreachable!("r came from an io::Result::<!>"),
-                // Automatic, hidden, explicit type conversion in desugared version
-                Err(_) => OptionResultU32::Some(inner_try),
-            }
+            outer_try
         }
     }
 }
