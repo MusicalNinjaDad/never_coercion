@@ -22,33 +22,22 @@ pub fn process(input: u32) -> Option<io::Result<u32>> {
     }
 }
 
-// Avoiding map and writing this out help to highlight where the confusion arises
-pub fn process_some_try(input: u32) -> Option<io::Result<u32>> {
-    let io_function = Ok(input);
-    match io_function {
-        Ok(_) => Some(io_function),
-        Err(e) => {
-            let o: Option<Result<!, io::Error>> = ignore_blocking(e);
-
-            // It looks like this coerces an Option<io::Result<!>>::None,
-            // to an Option<io::Result<u32>>::None
-            let r: Result<!, io::Error> = o?;
-
-            Some(try { r? })
-        }
-    }
-}
-
-// Easier to see what is going on if we explicitly mark the try blocks
-// and don't manually construct a final Some()
+// Easier to see what is going on if we explicitly use try blocks
 pub fn process_try_try(input: u32) -> Option<io::Result<u32>> {
     let io_function = Ok(input);
     match io_function {
         Ok(_) => Some(io_function),
         Err(e) => {
             try {
-                let o: Option<Result<!, io::Error>> = ignore_blocking(e);
-                let r: Result<!, io::Error> = o?;
+                let o: Option<io::Result<!>> = ignore_blocking(e);
+                
+                // It _looks like_ this coerces an Option<io::Result<!>>::None,
+                // to an Option<io::Result<u32>>::None, but see below for what
+                // is really happening
+                let r: io::Result<!> = o?;
+
+                // And this _appears to_ coerce an io::Result<!>::Err to an
+                // io::Result<u32>::Err, but, again, see below for reality.
                 try { r? }
             }
         }
